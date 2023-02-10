@@ -26,7 +26,7 @@ def main():
         )
         while True:
             msg = input(colored("You: ", "blue"))
-            if msg.lower() == "history" or msg.lower() == "transcript":
+            if msg.lower() in ["history", "transcript"]:
                 print(
                     colored("Transcript:\n", "blue"),
                     f'{api.invoke("/transcript", verb=Verb.GET, chat_history_handle=session_handle)}\n',

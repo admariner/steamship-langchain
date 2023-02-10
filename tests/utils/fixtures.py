@@ -20,6 +20,5 @@ def client() -> Steamship:
     """
     steamship = get_steamship_client()
     workspace = Workspace.create(client=steamship)
-    new_client = get_steamship_client(workspace_id=workspace.id)
-    yield new_client
+    yield get_steamship_client(workspace_id=workspace.id)
     workspace.delete()

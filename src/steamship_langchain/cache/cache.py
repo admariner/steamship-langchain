@@ -45,11 +45,7 @@ class SteamshipCache(BaseCache):
         value_dict = store.get(key=SteamshipCache._key_for(prompt)) or {}
         if len(value_dict) > 0:
             logging.debug(f"cache hit for {prompt}")
-            generations = []
-            for _, text in value_dict.items():
-                generations.append(Generation(text))
-            return generations
-
+            return [Generation(text) for _, text in value_dict.items()]
         logging.debug(f"cache miss for {prompt}")
         return None
 
@@ -68,10 +64,10 @@ class SteamshipCache(BaseCache):
             store = KeyValueStore(client=self.client, store_identifier=cache_handle)
             self.key_store_map[cache_handle] = store
 
-        value = {}
-        for i, generation in enumerate(return_val):
-            value[f"generation-{i}"] = generation.text
-
+        value = {
+            f"generation-{i}": generation.text
+            for i, generation in enumerate(return_val)
+        }
         # TODO: should this be synchronous and wait?
         store.set(key=SteamshipCache._key_for(prompt), value=value)
         return None

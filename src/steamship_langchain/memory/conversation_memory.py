@@ -77,8 +77,8 @@ class ConversationBufferMemory(Memory):
             output_key = list(outputs.keys())[0]
         else:
             output_key = self.output_key
-        human = f"{self.human_prefix}: " + inputs[prompt_input_key]
-        ai = f"{self.ai_prefix}: " + outputs[output_key]
+        human = f"{self.human_prefix}: {inputs[prompt_input_key]}"
+        ai = f"{self.ai_prefix}: {outputs[output_key]}"
         block_text = "\n".join([human, ai])
 
         conversation_file = self._get_or_create_conversation_file()
@@ -91,8 +91,7 @@ class ConversationBufferMemory(Memory):
         self._delete_conversation_file()
 
     def _get_or_create_conversation_file(self) -> File:
-        convo_file = self._get_conversation_file()
-        if convo_file:
+        if convo_file := self._get_conversation_file():
             return convo_file
         return File.create(self.client, handle=self.key, blocks=[])
 
@@ -103,8 +102,7 @@ class ConversationBufferMemory(Memory):
             return None
 
     def _delete_conversation_file(self):
-        convo_file = self._get_conversation_file()
-        if convo_file:
+        if convo_file := self._get_conversation_file():
             convo_file.delete()
 
 

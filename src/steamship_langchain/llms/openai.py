@@ -52,10 +52,7 @@ class OpenAI(BaseLLM):
     def _instance_handle(self, stop: Optional[List[str]] = None) -> str:
         params = self._identifying_params
         stop_str = ",".join(stop) if stop is not None else ""
-        param_strs = []
-        for key, value in params.items():
-            param_strs.append(f"{key}-{value!s}")
-
+        param_strs = [f"{key}-{value!s}" for key, value in params.items()]
         param_str = "-".join(param_strs)
         instance_str = f"{param_str}-{stop_str}"
         return f'gpt-{hashlib.sha256(instance_str.encode("utf-8")).hexdigest()}'
@@ -69,10 +66,11 @@ class OpenAI(BaseLLM):
         generations = []
         for _prompts in sub_prompts:
             sub_generations = self._batch(prompts=_prompts, stop=stop)
-            for i in range(0, len(sub_generations), self.n):
-                generations.append(sub_generations[i : i + self.n])
-
-        if len(generations) == 0:
+            generations.extend(
+                sub_generations[i : i + self.n]
+                for i in range(0, len(sub_generations), self.n)
+            )
+        if not generations:
             generations = [[Generation(text="Generation failed.")]]
 
         return LLMResult(generations=generations)
@@ -99,10 +97,7 @@ class OpenAI(BaseLLM):
             fetch_if_exists=True,
         )
 
-        blocks = []
-        for prompt in prompts:
-            blocks.append(Block(text=prompt))
-
+        blocks = [Block(text=prompt) for prompt in prompts]
         generations = []
         try:
             prompt_file = File.create(client=self.client, blocks=blocks)
@@ -119,8 +114,4 @@ class OpenAI(BaseLLM):
                         generations.append(Generation(generation))
         except SteamshipError as e:
             logging.error(f"could not generate from OpenAI LLM: {e}")
-            # TODO(douglas-reid): determine appropriate action here.
-            # for now, if an error is encountered, just swallow.
-            pass
-
         return generations
